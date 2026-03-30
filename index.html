@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>등대6셀 기도방</title>
+<link rel="apple-touch-icon" href="./icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="등대6셀 기도방">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--cream:#faf7f2;--warm:#fff9f0;--parchment:#f0e8d8;--gold:#c9a84c;--gold-d:#9a7a2e;--ink:#2c2416;--ink-s:#5a4e3a;--ink-m:#9a8c75;--ans:#4a7c59;--ans-bg:#eaf4ee;--shadow:rgba(44,36,22,0.1);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--cream);color:var(--ink);font-family:'Noto Sans KR',sans-serif;font-size:13px;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .wrap{max-width:820px;margin:0 auto;padding:0 14px 60px;}
+  .loading-screen{position:fixed;inset:0;background:var(--cream);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:16px;}
+  .loading-cross{font-size:24px;letter-spacing:10px;opacity:.4;}
+  .loading-spinner{width:30px;height:30px;border:3px solid var(--parchment);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
+  .loading-text{font-family:'Noto Serif KR',serif;font-size:13px;color:var(--ink-m);}
+
+  .hdr{text-align:center;padding:28px 0 20px;border-bottom:1px solid var(--parchment);margin-bottom:20px;}
+  .hdr-cross{font-size:14px;letter-spacing:10px;opacity:.4;margin-bottom:8px;}
+  .hdr h1{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:700;letter-spacing:-.02em;}
+  .hdr p{margin-top:5px;color:var(--ink-m);font-size:11px;}
+  .verse{margin-top:11px;display:inline-block;padding:9px 14px;background:var(--parchment);border-left:3px solid var(--gold);border-radius:0 7px 7px 0;font-family:'Noto Serif KR',serif;font-size:11px;color:var(--ink-s);font-style:italic;line-height:1.7;}
+  .sync-badge{margin-top:8px;font-size:10px;color:var(--gold);font-weight:500;}
+  .sync-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);margin-right:4px;animation:pulse 2s infinite;}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;}
+  .sc{background:white;border:1px solid var(--parchment);border-radius:12px;padding:13px 8px;text-align:center;box-shadow:0 2px 8px var(--shadow);cursor:pointer;transition:all .2s;}
+  .sc:hover{transform:translateY(-2px);box-shadow:0 6px 18px var(--shadow);border-color:var(--gold);}
+  .sc-num{font-family:'Noto Serif KR',serif;font-size:24px;font-weight:700;color:var(--gold-d);line-height:1;}
+  .sc-lbl{font-size:10px;color:var(--ink-m);margin-top:5px;}
+  .sc-hint{font-size:9px;color:var(--gold);margin-top:3px;}
+
+  .tabs{display:flex;gap:2px;background:var(--parchment);padding:3px;border-radius:11px;margin-bottom:18px;overflow-x:auto;}
+  .tab{flex:1;padding:8px 3px;border:none;background:transparent;border-radius:9px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:10px;font-weight:500;color:var(--ink-m);transition:all .2s;white-space:nowrap;}
+  .tab.on{background:white;color:var(--ink);box-shadow:0 2px 6px var(--shadow);}
+
+  .sec-title{font-family:'Noto Serif KR',serif;font-size:14px;font-weight:600;margin-bottom:12px;display:block;}
+  .cards{display:grid;gap:10px;}
+  .card{background:white;border:1px solid var(--parchment);border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px var(--shadow);position:relative;overflow:hidden;animation:fadeIn .3s ease;}
+  .card-bar{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px;background:var(--gold);}
+  .card.is-answered{background:#f9fdf9;border-color:#c8e0cc;opacity:.88;}
+  .card.is-answered .card-bar{background:var(--ans);}
+  .card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+  .card-name{font-family:'Noto Serif KR',serif;font-weight:700;font-size:14px;color:var(--ink);}
+  .card-date{font-size:10px;color:var(--ink-m);white-space:nowrap;}
+  .card-body-row{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
+  .ans-tag{display:inline-block;flex-shrink:0;background:#c0392b;color:white;font-family:'Noto Serif KR',serif;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.04em;line-height:1.4;}
+  .card-body{font-size:16px;color:var(--ink-s);line-height:1.75;flex:1;}
+  .card-foot{display:flex;gap:4px;flex-wrap:wrap;align-items:center;}
+  .xb{display:inline;font-family:'Noto Sans KR',sans-serif;font-size:9px;font-weight:500;border:1px solid #ccc;border-radius:3px;padding:1px 5px;background:white;cursor:pointer;white-space:nowrap;user-select:none;line-height:1.4;}
+  .xb:hover{opacity:.75;}
+  .xb-pray{border-color:var(--gold);color:var(--gold-d);}
+  .xb-ans{border-color:var(--ans);color:var(--ans);}
+  .xb-edit{border-color:#7a9cc0;color:#3a6a96;}
+  .xb-del{border-color:#ccc;color:var(--ink-m);}
+  .xb-undo{border-color:#b08040;color:#8a6020;}
+  .pray-cnt{margin-left:auto;font-size:9px;color:var(--ink-m);}
+  .pray-cnt b{color:var(--gold-d);}
+
+  .btn-add-main{width:100%;padding:12px;background:var(--gold);color:white;border:none;border-radius:10px;font-family:'Noto Serif KR',serif;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px;transition:all .2s;}
+  .btn-add-main:hover{background:var(--gold-d);}
+  .btn-add-main:disabled{background:#ccc;cursor:not-allowed;}
+  .form-box{background:white;border:1px solid var(--parchment);border-radius:16px;padding:20px;box-shadow:0 4px 18px var(--shadow);}
+  .fg{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
+  .fg label{font-size:10px;font-weight:500;color:var(--ink-s);}
+  .fg input,.fg textarea{border:1.5px solid var(--parchment);border-radius:8px;padding:8px 11px;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--ink);background:var(--warm);outline:none;resize:none;width:100%;transition:border-color .2s;}
+  .fg input:focus,.fg textarea:focus{border-color:var(--gold);background:white;}
+
+  .stat-sec{background:white;border:1px solid var(--parchment);border-radius:14px;padding:16px;box-shadow:0 2px 10px var(--shadow);margin-bottom:12px;}
+  .stat-sec h3{font-family:'Noto Serif KR',serif;font-size:13px;margin-bottom:12px;}
+  .mbar{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--parchment);}
+  .mbar:last-child{border-bottom:none;}
+  .mbar-name{font-size:11px;font-weight:500;min-width:55px;}
+  .mbar-wrap{flex:1;height:6px;background:var(--parchment);border-radius:4px;overflow:hidden;}
+  .mbar-fill-green{height:100%;background:linear-gradient(90deg,#5dba7a,#3da05a);border-radius:4px;transition:width .8s ease;}
+  .mbar-fill-pink{height:100%;background:linear-gradient(90deg,#e8729a,#c94d7a);border-radius:4px;transition:width .8s ease;}
+  .mbar-val{font-size:10px;color:var(--ink-m);min-width:28px;text-align:right;}
+
+  .allview-box{background:white;border:1px solid var(--parchment);border-radius:16px;overflow:hidden;box-shadow:0 4px 20px var(--shadow);}
+  .allview-header{background:linear-gradient(135deg,#2c2416,#4a3c28);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;}
+  .allview-header-title{font-family:'Noto Serif KR',serif;font-size:13px;font-weight:700;color:#f0e8d8;}
+  .allview-header-sub{font-size:10px;color:var(--gold);margin-top:2px;}
+  .allview-count-badge{background:var(--gold);color:white;font-family:'Noto Serif KR',serif;font-size:12px;font-weight:700;padding:5px 12px;border-radius:18px;}
+  .member-block{border-bottom:1px solid var(--parchment);}
+  .member-block:last-child{border-bottom:none;}
+  .member-name-row{display:flex;align-items:center;gap:9px;padding:12px 20px 8px;background:#fdf9f3;border-bottom:1px solid var(--parchment);}
+  .member-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-d));display:flex;align-items:center;justify-content:center;font-family:'Noto Serif KR',serif;font-size:12px;font-weight:700;color:white;flex-shrink:0;}
+  .member-name-text{font-family:'Noto Serif KR',serif;font-weight:700;font-size:13px;}
+  .member-pray-count{margin-left:auto;font-size:10px;color:var(--ink-m);background:var(--parchment);padding:2px 8px;border-radius:9px;}
+  .prayer-row{display:flex;align-items:center;gap:10px;padding:9px 20px;border-bottom:1px solid #f8f2e8;transition:background .15s;}
+  .prayer-row:last-child{border-bottom:none;}
+  .prayer-row:hover{background:#fdf8f0;}
+  .prayer-num{font-size:10px;color:var(--gold);font-weight:700;min-width:16px;}
+  .prayer-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;background:var(--gold);}
+  .prayer-text{font-size:12px;color:var(--ink-s);line-height:1.65;flex:1;}
+  .prayer-btns{display:flex;align-items:center;gap:5px;flex-shrink:0;}
+  .row-btn{display:inline-flex;align-items:center;justify-content:center;gap:3px;width:72px;height:26px;border-radius:6px;border:1.5px solid;font-family:'Noto Sans KR',sans-serif;font-size:10px;font-weight:500;cursor:pointer;white-space:nowrap;user-select:none;background:white;transition:background .15s;}
+  .row-btn-pray{border-color:var(--gold);color:var(--gold-d);}
+  .row-btn-pray:hover{background:#fdf8ec;}
+  .row-btn-ans{border-color:#4caf72;color:#2d8a4e;}
+  .row-btn-ans:hover{background:#edfaf3;}
+  .check-icon{display:inline-block;width:13px;height:13px;background:#4caf72;border-radius:3px;flex-shrink:0;position:relative;}
+  .check-icon::after{content:'';position:absolute;left:3px;top:1.5px;width:5px;height:8px;border-right:2px solid white;border-bottom:2px solid white;transform:rotate(45deg) translate(-1px,-2px);}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(44,36,22,0.5);display:flex;align-items:center;justify-content:center;z-index:900;padding:16px;}
+  .modal-box{background:white;border-radius:18px;padding:24px;width:100%;max-width:400px;box-shadow:0 12px 48px rgba(44,36,22,0.25);}
+  .modal-title{font-family:'Noto Serif KR',serif;font-size:15px;font-weight:700;color:var(--ink);margin-bottom:16px;}
+  .modal-btns{display:flex;gap:8px;margin-top:6px;}
+  .btn-modal-ok{flex:1;padding:11px;background:var(--gold);color:white;border:none;border-radius:9px;font-family:'Noto Serif KR',serif;font-size:13px;font-weight:600;cursor:pointer;}
+  .btn-modal-ok:hover{background:var(--gold-d);}
+  .btn-modal-cancel{padding:11px 14px;background:white;color:var(--ink-m);border:1.5px solid var(--parchment);border-radius:9px;font-family:'Noto Sans KR',sans-serif;font-size:12px;cursor:pointer;}
+  .pw-hint{font-size:10px;color:var(--ink-m);margin-top:4px;}
+  .empty{text-align:center;padding:40px 16px;color:var(--ink-m);}
+  .empty .ico{font-size:28px;margin-bottom:8px;}
+  .empty p{font-size:11px;line-height:1.7;}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--warm);padding:10px 20px;border-radius:26px;font-size:12px;z-index:9999;pointer-events:none;white-space:nowrap;animation:fadeUp .3s ease forwards;}
+</style>
+</head>
+<body>
+
+<div class="modal-overlay" id="edit-modal" style="display:none" onclick="if(event.target.id==='edit-modal')closeModal('edit-modal')">
+  <div class="modal-box">
+    <div class="modal-title">✏️ 기도제목 수정</div>
+    <input type="hidden" id="edit-key">
+    <div class="fg"><label>이름</label><input id="edit-name"></div>
+    <div class="fg"><label>기도제목</label><textarea id="edit-content" rows="3"></textarea></div>
+    <div class="fg"><label>관리자 비밀번호 🔒</label><input type="password" id="edit-pw" placeholder="비밀번호 입력"><div class="pw-hint">수정·삭제는 관리자만 가능합니다</div></div>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeModal('edit-modal')">취소</button>
+      <button class="btn-modal-ok" onclick="saveEdit()">💾 저장</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="del-modal" style="display:none" onclick="if(event.target.id==='del-modal')closeModal('del-modal')">
+  <div class="modal-box">
+    <div class="modal-title">🗑️ 기도제목 삭제</div>
+    <input type="hidden" id="del-key">
+    <p style="font-size:12px;color:var(--ink-s);margin-bottom:14px;line-height:1.6">이 기도제목을 삭제할까요?</p>
+    <div class="fg"><label>관리자 비밀번호 🔒</label><input type="password" id="del-pw" placeholder="비밀번호 입력"><div class="pw-hint">수정·삭제는 관리자만 가능합니다</div></div>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeModal('del-modal')">취소</button>
+      <button class="btn-modal-ok" style="background:#c0392b" onclick="confirmDelete()">삭제</button>
+    </div>
+  </div>
+</div>
+
+<div class="loading-screen" id="loading">
+  <div class="loading-cross">✦ ✦ ✦</div>
+  <div class="loading-spinner"></div>
+  <div class="loading-text">기도제목을 불러오는 중...</div>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <div class="hdr">
+    <div class="hdr-cross">✦ ✦ ✦</div>
+    <h1>등대6셀 기도방</h1>
+    <p>등대6셀이 함께 기도하며 하나님의 은혜를 나눕니다</p>
+    <div class="verse">"너는 내게 부르짖으라 내가 네게 응답하겠고<br>네가 알지 못하는 크고 은밀한 일을 네게 보이리라" — 예레미야 33:3</div>
+    <div class="sync-badge"><span class="sync-dot"></span>Firebase 실시간 동기화 · 셀 전체 공유</div>
+  </div>
+
+  <div class="stats">
+    <div class="sc" onclick="switchTab('list')"><div class="sc-num" id="st-total">0</div><div class="sc-lbl">📋 전체 기도제목</div><div class="sc-hint">눌러서 보기 →</div></div>
+    <div class="sc" onclick="switchTab('all')"><div class="sc-num" id="st-active">0</div><div class="sc-lbl">🙏 기도중</div><div class="sc-hint">눌러서 보기 →</div></div>
+    <div class="sc" onclick="switchTab('answered')"><div class="sc-num" id="st-ans">0</div><div class="sc-lbl">✅ 기도응답</div><div class="sc-hint">눌러서 보기 →</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" onclick="switchTab('list')">🙏 기도제목</button>
+    <button class="tab" onclick="switchTab('all')">📋 한눈에 보기</button>
+    <button class="tab" onclick="switchTab('add')">＋ 기도등록</button>
+    <button class="tab" onclick="switchTab('answered')">✅ 기도응답</button>
+    <button class="tab" onclick="switchTab('stats')">📊 통계</button>
+  </div>
+
+  <div id="tab-list"><span class="sec-title">전체 기도제목</span><div class="cards" id="card-list"></div></div>
+  <div id="tab-all" style="display:none">
+    <div class="allview-box">
+      <div class="allview-header">
+        <div><div class="allview-header-title">📋 전체 기도제목 한눈에 보기</div><div class="allview-header-sub">미응답 기도제목만 표시</div></div>
+        <div class="allview-count-badge" id="all-badge">0건</div>
+      </div>
+      <div id="all-list"></div>
+    </div>
+  </div>
+  <div id="tab-add" style="display:none">
+    <div class="form-box">
+      <h2 style="font-family:'Noto Serif KR',serif;font-size:15px;margin-bottom:16px;color:var(--ink)">✏️ 기도제목 등록</h2>
+      <div class="fg"><label>이름</label><input id="f-name" placeholder="셀원 이름"></div>
+      <div class="fg"><label>기도제목</label><textarea id="f-content" rows="4" placeholder="기도제목을 자세히 적어주세요..."></textarea></div>
+      <button class="btn-add-main" id="btn-submit" onclick="addPrayer()">🙏 기도제목 등록하기</button>
+    </div>
+  </div>
+  <div id="tab-answered" style="display:none"><span class="sec-title">기도응답 목록</span><div class="cards" id="ans-list"></div></div>
+  <div id="tab-stats" style="display:none">
+    <div class="stat-sec"><h3>👥 셀원별 기도제목 현황</h3><div id="member-bars"></div></div>
+    <div class="stat-sec"><h3>🙏 가장 많이 기도한 제목 TOP 5</h3><div id="top-bars"></div></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, update, remove, get }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const ADMIN_PW = '1234';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAQa9es7K1_bhLawaisbdL9L0gMn9fxY0Y",
+  authDomain: "lighthouse6prayer.firebaseapp.com",
+  databaseURL: "https://lighthouse6prayer-default-rtdb.firebaseio.com",
+  projectId: "lighthouse6prayer",
+  storageBucket: "lighthouse6prayer.firebasestorage.app",
+  messagingSenderId: "782146044442",
+  appId: "1:782146044442:web:1473888cf3c93d57db07a3"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+const INIT_PRAYERS = [
+  {name:"표창석",content:"지윤이가 초등학교 입학하는데 적응 잘하도록 인도하소서",date:"2026-03-26",prayCount:0},
+  {name:"표창석",content:"일하는데 체력을 주시고 인정받고 존중받는 자가 되게 하소서",date:"2026-03-26",prayCount:0},
+  {name:"최한나",content:"몸 관리 건강관리를 잘하게 하소서",date:"2026-03-26",prayCount:0},
+  {name:"최한나",content:"자녀를 허락하소서",date:"2026-03-26",prayCount:0},
+  {name:"최한나",content:"같이 일하시는 동료분들이 건강하도록 인도하소서",date:"2026-03-26",prayCount:0},
+  {name:"정효진",content:"부모님 구원해 주소서",date:"2026-03-26",prayCount:0},
+  {name:"정효진",content:"어머니의 질병 완치",date:"2026-03-26",prayCount:0},
+  {name:"정효진",content:"지민이가 어린이집에 잘 적응하게 하소서",date:"2026-03-26",prayCount:0},
+  {name:"정경철",content:"지한이가 중학교 생활에 적응을 잘하도록 인도하소서",date:"2026-03-26",prayCount:0},
+  {name:"정경철",content:"회사에서 일할 때 신바람이 나게 하시고 반복되는 퇴사에도 불구하고 업무가 잘 진행되도록 인도하소서",date:"2026-03-26",prayCount:0},
+  {name:"장하라",content:"여원이가 중학교에서 적응 잘하게 하소서",date:"2026-03-26",prayCount:0},
+  {name:"장하라",content:"새학기 새제자들과 호흡을 잘 맞추게 하소서",date:"2026-03-26",prayCount:0},
+  {name:"이은준",content:"어머니께서 예수님을 믿고 구원받게 하소서",date:"2026-03-26",prayCount:0},
+  {name:"이은준",content:"어머니와의 관계가 회복되게 하소서",date:"2026-03-26",prayCount:0},
+  {name:"이은준",content:"회사가 이사갈 가능성이 있는데 7월에 결정이 됩니다. 주님의 선하신 계획대로 인도하소서",date:"2026-03-26",prayCount:0},
+  {name:"이은선",content:"민건이가 중학교에 잘 적응하도록 인도하소서",date:"2026-03-26",prayCount:0},
+  {name:"이은선",content:"창원으로 발령이 났습니다. 새로운 직장에 적응을 잘하고 두각을 나타내도록 인도하소서",date:"2026-03-26",prayCount:0},
+  {name:"이은선",content:"셀예배 주일예배 수요예배 등 예배생활에 열정을 부어주소서",date:"2026-03-26",prayCount:0},
+  {name:"이은선",content:"성장반 수강하고 있습니다. 큰 은혜 주소서",date:"2026-03-26",prayCount:0},
+  {name:"서선경",content:"갑상선이 좋아져서 약을 먹지 않게 되었는데 건강이 잘 유지되도록 인도하소서",date:"2026-03-26",prayCount:0},
+  {name:"박기웅",content:"자녀를 기다립니다. 허락하소서",date:"2026-03-26",prayCount:0},
+  {name:"박기웅",content:"아버지께서 예수님을 믿고 구원받게 하소서",date:"2026-03-26",prayCount:0},
+  {name:"문태균",content:"당뇨전단계라서 운동하는데 건강해지도록 인도하소서",date:"2026-03-26",prayCount:0},
+  {name:"김진봉",content:"다이어트 계획하고 있습니다. 부부가 같이 더 건강해지도록 인도하소서",date:"2026-03-26",prayCount:0},
+  {name:"강경훈",content:"갑상선암 재발하지 않고 건강관리 잘하도록 인도하소서",date:"2026-03-26",prayCount:0},
+];
+
+let prayers={}, answered={}, curTab='list';
+function today(){return new Date().toISOString().split('T')[0];}
+function nowTs(){return Date.now();}
+function pa(){return Object.entries(prayers).map(([k,v])=>({...v,_key:k}));}
+function aa(){return Object.entries(answered).map(([k,v])=>({...v,_key:k}));}
+function xb(cls,label,fn){return `<span class="xb ${cls}" onclick="${fn}">${label}</span>`;}
+
+const prayRef=ref(db,'prayers');
+const ansRef=ref(db,'answered');
+onValue(prayRef,snap=>{prayers=snap.val()||{};render();hideLoading();});
+onValue(ansRef,snap=>{answered=snap.val()||{};render();});
+async function seedIfEmpty(){const snap=await get(prayRef);if(!snap.exists())for(const p of INIT_PRAYERS)await push(prayRef,p);}
+seedIfEmpty();
+
+function hideLoading(){document.getElementById('loading').style.display='none';document.getElementById('app').style.display='';}
+
+function render(){
+  const pl=pa(),al=aa();
+  document.getElementById('st-total').textContent=pl.length+al.length;
+  document.getElementById('st-active').textContent=pl.length;
+  document.getElementById('st-ans').textContent=al.length;
+  if(curTab==='list')renderList();
+  if(curTab==='all')renderAll();
+  if(curTab==='answered')renderAnswered();
+  if(curTab==='stats')renderStats();
+}
+
+function activeCard(p){return `<div class="card"><div class="card-bar"></div>
+  <div class="card-top"><span class="card-name">${p.name}</span><span class="card-date">${p.date}</span></div>
+  <div class="card-body-row"><p class="card-body">${p.content}</p></div>
+  <div class="card-foot">
+    ${xb('xb-pray','🙏 기도했어요',`markPrayed('${p._key}')`)}
+    ${xb('xb-ans','✅ 응답받음',`markAnswered('${p._key}')`)}
+    ${xb('xb-edit','✏️ 수정',`openEdit('${p._key}')`)}
+    ${xb('xb-del','🗑️ 삭제',`openDel('${p._key}')`)}
+    <span class="pray-cnt">기도 <b>${p.prayCount||0}</b>회</span>
+  </div></div>`;}
+
+function answeredCard(p){return `<div class="card is-answered"><div class="card-bar"></div>
+  <div class="card-top"><span class="card-name">${p.name}</span><span class="card-date">${p.answeredDate} 응답</span></div>
+  <div class="card-body-row"><span class="ans-tag">응답됨</span><p class="card-body">${p.content}</p></div>
+  <div class="card-foot">
+    ${xb('xb-undo','↩️ 기도중으로 되돌리기',`undoAnswered('${p._key}')`)}
+    <span class="pray-cnt">기도 <b>${p.prayCount||0}</b>회</span>
+  </div></div>`;}
+
+function renderList(){
+  const el=document.getElementById('card-list');
+  const active=pa();
+  const done=[...aa()].sort((a,b)=>(b.answeredTs||0)-(a.answeredTs||0));
+  if(!active.length&&!done.length){el.innerHTML='<div class="empty"><div class="ico">🕊️</div><p>등록된 기도제목이 없습니다.</p></div>';return;}
+  el.innerHTML=active.map(activeCard).join('')+done.map(answeredCard).join('');
+}
+
+function renderAll(){
+  const el=document.getElementById('all-list');
+  const list=pa();
+  document.getElementById('all-badge').textContent=list.length+'건';
+  if(!list.length){el.innerHTML='<div class="empty"><div class="ico">🕊️</div><p>현재 기도중인 제목이 없습니다.</p></div>';return;}
+  const order=[],map={};
+  list.forEach(p=>{if(!map[p.name]){map[p.name]=[];order.push(p.name);}map[p.name].push(p);});
+  el.innerHTML=order.map(name=>{const items=map[name];return `<div class="member-block">
+    <div class="member-name-row"><div class="member-avatar">${name[0]}</div><span class="member-name-text">${name}</span><span class="member-pray-count">기도제목 ${items.length}개</span></div>
+    ${items.map((p,i)=>`<div class="prayer-row">
+      <span class="prayer-num">${i+1}</span><div class="prayer-dot"></div>
+      <span class="prayer-text">${p.content}</span>
+      <div class="prayer-btns">
+        <span class="row-btn row-btn-pray" onclick="markPrayedQ('${p._key}',this)">🙏 <span>${p.prayCount||0}</span></span>
+        <span class="row-btn row-btn-ans" onclick="markAnsweredQ('${p._key}')"><span class="check-icon"></span>&nbsp;기도응답</span>
+      </div>
+    </div>`).join('')}
+  </div>`;}).join('');
+}
+
+function renderAnswered(){
+  const el=document.getElementById('ans-list');
+  const list=[...aa()].sort((a,b)=>(b.answeredTs||0)-(a.answeredTs||0));
+  if(!list.length){el.innerHTML='<div class="empty"><div class="ico">🌟</div><p>아직 기도응답이 없습니다.<br>하나님의 응답을 기대해요!</p></div>';return;}
+  el.innerHTML=list.map(answeredCard).join('');
+}
+
+function renderStats(){
+  const pl=pa(),al=aa();
+  const mm={};[...pl,...al].forEach(p=>{mm[p.name]=(mm[p.name]||0)+1;});
+  const me=Object.entries(mm).sort((a,b)=>b[1]-a[1]);
+  const mx=Math.max(...me.map(e=>e[1]),1);
+  document.getElementById('member-bars').innerHTML=me.length?me.map(([n,v])=>`
+    <div class="mbar"><span class="mbar-name">${n}</span>
+    <div class="mbar-wrap"><div class="mbar-fill-green" style="width:${v/mx*100}%"></div></div>
+    <span class="mbar-val">${v}건</span></div>`).join(''):'<p style="font-size:11px;color:var(--ink-m)">데이터 없음</p>';
+  const top=[...pl].sort((a,b)=>(b.prayCount||0)-(a.prayCount||0)).slice(0,5);
+  const mp=Math.max(...top.map(p=>p.prayCount||0),1);
+  document.getElementById('top-bars').innerHTML=top.length?top.map(p=>`
+    <div class="mbar"><span class="mbar-name">${p.name}</span>
+    <div class="mbar-wrap"><div class="mbar-fill-pink" style="width:${(p.prayCount||0)/mp*100}%"></div></div>
+    <span class="mbar-val">${p.prayCount||0}회</span></div>`).join(''):'<p style="font-size:11px;color:var(--ink-m)">아직 기도 기록이 없습니다</p>';
+}
+
+async function doAnswered(k){
+  const p=prayers[k];if(!p)return;
+  const ts=nowTs();
+  await push(ref(db,'answered'),{...p,answeredDate:today(),answeredTs:ts});
+  await remove(ref(db,`prayers/${k}`));
+  toast('🎉 기도응답을 기록했습니다! 할렐루야!');
+}
+
+window.markPrayed=async(k)=>{const cur=prayers[k]?.prayCount||0;await update(ref(db,`prayers/${k}`),{prayCount:cur+1});toast('🙏 기도 횟수가 기록되었습니다');};
+window.markPrayedQ=async(k,btn)=>{const cur=prayers[k]?.prayCount||0;await update(ref(db,`prayers/${k}`),{prayCount:cur+1});const s=btn.querySelector('span:last-child');if(s)s.textContent=cur+1;toast('🙏 기도 횟수가 기록되었습니다');};
+window.markAnswered=async(k)=>doAnswered(k);
+window.markAnsweredQ=async(k)=>doAnswered(k);
+window.undoAnswered=async(k)=>{const p=answered[k];if(!p)return;const{answeredDate,answeredTs,...rest}=p;await push(ref(db,'prayers'),{...rest});await remove(ref(db,`answered/${k}`));toast('↩️ 기도제목으로 되돌렸습니다');};
+window.openEdit=(k)=>{const p=prayers[k];if(!p)return;document.getElementById('edit-key').value=k;document.getElementById('edit-name').value=p.name;document.getElementById('edit-content').value=p.content;document.getElementById('edit-pw').value='';document.getElementById('edit-modal').style.display='flex';};
+window.saveEdit=async()=>{const k=document.getElementById('edit-key').value,name=document.getElementById('edit-name').value.trim(),content=document.getElementById('edit-content').value.trim(),pw=document.getElementById('edit-pw').value;if(pw!==ADMIN_PW){toast('🔒 비밀번호가 틀렸습니다');return;}if(!name||!content){toast('모두 입력해 주세요');return;}await update(ref(db,`prayers/${k}`),{name,content});closeModal('edit-modal');toast('✅ 수정되었습니다');};
+window.openDel=(k)=>{document.getElementById('del-key').value=k;document.getElementById('del-pw').value='';document.getElementById('del-modal').style.display='flex';};
+window.confirmDelete=async()=>{const k=document.getElementById('del-key').value,pw=document.getElementById('del-pw').value;if(pw!==ADMIN_PW){toast('🔒 비밀번호가 틀렸습니다');return;}await remove(ref(db,`prayers/${k}`));closeModal('del-modal');toast('삭제되었습니다');};
+window.addPrayer=async()=>{const name=document.getElementById('f-name').value.trim(),content=document.getElementById('f-content').value.trim();if(!name||!content){toast('이름과 기도제목을 입력해 주세요');return;}const btn=document.getElementById('btn-submit');btn.disabled=true;btn.textContent='등록 중...';await push(prayRef,{name,content,date:today(),prayCount:0});document.getElementById('f-name').value='';document.getElementById('f-content').value='';btn.disabled=false;btn.textContent='🙏 기도제목 등록하기';toast('✅ 기도제목이 등록되었습니다');switchTab('list');};
+window.closeModal=(id)=>{document.getElementById(id).style.display='none';};
+window.switchTab=(name)=>{curTab=name;['list','all','add','answered','stats'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===name?'':'none';});document.querySelectorAll('.tab').forEach((b,i)=>{b.classList.toggle('on',['list','all','add','answered','stats'][i]===name);});render();};
+
+let tt;
+function toast(msg){const ex=document.querySelector('.toast');if(ex)ex.remove();clearTimeout(tt);const el=document.createElement('div');el.className='toast';el.textContent=msg;document.body.appendChild(el);tt=setTimeout(()=>el.remove(),2500);}
+</script>
+</body>
+</html>
