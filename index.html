@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>등대6셀 기도방</title>
-<link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="apple-touch-icon" href="/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="등대6셀 기도방">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
@@ -302,7 +302,7 @@ function answeredCard(p){return `<div class="card is-answered"><div class="card-
 
 function renderList(){
   const el=document.getElementById('card-list');
-  const active=pa();
+  const active=[...pa()].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
   const done=[...aa()].sort((a,b)=>(b.answeredTs||0)-(a.answeredTs||0));
   if(!active.length&&!done.length){el.innerHTML='<div class="empty"><div class="ico">🕊️</div><p>등록된 기도제목이 없습니다.</p></div>';return;}
   el.innerHTML=active.map(activeCard).join('')+done.map(answeredCard).join('');
@@ -315,6 +315,7 @@ function renderAll(){
   if(!list.length){el.innerHTML='<div class="empty"><div class="ico">🕊️</div><p>현재 기도중인 제목이 없습니다.</p></div>';return;}
   const order=[],map={};
   list.forEach(p=>{if(!map[p.name]){map[p.name]=[];order.push(p.name);}map[p.name].push(p);});
+  order.sort((a,b)=>b.localeCompare(a,'ko'));
   el.innerHTML=order.map(name=>{const items=map[name];return `<div class="member-block">
     <div class="member-name-row"><div class="member-avatar">${name[0]}</div><span class="member-name-text">${name}</span><span class="member-pray-count">기도제목 ${items.length}개</span></div>
     ${items.map((p,i)=>`<div class="prayer-row">
@@ -369,7 +370,7 @@ window.openEdit=(k)=>{const p=prayers[k];if(!p)return;document.getElementById('e
 window.saveEdit=async()=>{const k=document.getElementById('edit-key').value,name=document.getElementById('edit-name').value.trim(),content=document.getElementById('edit-content').value.trim(),pw=document.getElementById('edit-pw').value;if(pw!==ADMIN_PW){toast('🔒 비밀번호가 틀렸습니다');return;}if(!name||!content){toast('모두 입력해 주세요');return;}await update(ref(db,`prayers/${k}`),{name,content});closeModal('edit-modal');toast('✅ 수정되었습니다');};
 window.openDel=(k)=>{document.getElementById('del-key').value=k;document.getElementById('del-pw').value='';document.getElementById('del-modal').style.display='flex';};
 window.confirmDelete=async()=>{const k=document.getElementById('del-key').value,pw=document.getElementById('del-pw').value;if(pw!==ADMIN_PW){toast('🔒 비밀번호가 틀렸습니다');return;}await remove(ref(db,`prayers/${k}`));closeModal('del-modal');toast('삭제되었습니다');};
-window.addPrayer=async()=>{const name=document.getElementById('f-name').value.trim(),content=document.getElementById('f-content').value.trim();if(!name||!content){toast('이름과 기도제목을 입력해 주세요');return;}const btn=document.getElementById('btn-submit');btn.disabled=true;btn.textContent='등록 중...';await push(prayRef,{name,content,date:today(),prayCount:0});document.getElementById('f-name').value='';document.getElementById('f-content').value='';btn.disabled=false;btn.textContent='🙏 기도제목 등록하기';toast('✅ 기도제목이 등록되었습니다');switchTab('list');};
+window.addPrayer=async()=>{const name=document.getElementById('f-name').value.trim(),content=document.getElementById('f-content').value.trim();if(!name||!content){toast('이름과 기도제목을 입력해 주세요');return;}const btn=document.getElementById('btn-submit');btn.disabled=true;btn.textContent='등록 중...';await push(prayRef,{name,content,date:today(),prayCount:0,createdAt:Date.now()});document.getElementById('f-name').value='';document.getElementById('f-content').value='';btn.disabled=false;btn.textContent='🙏 기도제목 등록하기';toast('✅ 기도제목이 등록되었습니다');switchTab('list');};
 window.closeModal=(id)=>{document.getElementById(id).style.display='none';};
 window.switchTab=(name)=>{curTab=name;['list','all','add','answered','stats'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===name?'':'none';});document.querySelectorAll('.tab').forEach((b,i)=>{b.classList.toggle('on',['list','all','add','answered','stats'][i]===name);});render();};
 
