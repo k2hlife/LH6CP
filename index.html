@@ -7,7 +7,7 @@
 <link rel="apple-touch-icon" href="/icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="등대6셀 기도방">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
   :root{--cream:#faf7f2;--warm:#fff9f0;--parchment:#f0e8d8;--gold:#c9a84c;--gold-d:#9a7a2e;--ink:#2c2416;--ink-s:#5a4e3a;--ink-m:#9a8c75;--ans:#4a7c59;--ans-bg:#eaf4ee;--shadow:rgba(44,36,22,0.1);}
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -25,7 +25,7 @@
 
   .hdr{text-align:center;padding:28px 0 20px;border-bottom:1px solid var(--parchment);margin-bottom:20px;}
   .hdr-cross{font-size:14px;letter-spacing:10px;opacity:.4;margin-bottom:8px;}
-  .hdr h1{font-family:'Noto Serif KR',serif;font-size:20px;font-weight:700;letter-spacing:-.02em;}
+  .hdr h1{font-family:'Bebas Neue',sans-serif;font-size:40px;font-weight:400;letter-spacing:4px;}
   .hdr p{margin-top:5px;color:var(--ink-m);font-size:11px;}
   .verse{margin-top:11px;display:inline-block;padding:9px 14px;background:var(--parchment);border-left:3px solid var(--gold);border-radius:0 7px 7px 0;font-family:'Noto Serif KR',serif;font-size:11px;color:var(--ink-s);font-style:italic;line-height:1.7;}
   .sync-badge{margin-top:8px;font-size:10px;color:var(--gold);font-weight:500;}
@@ -39,7 +39,7 @@
   .sc-hint{font-size:9px;color:var(--gold);margin-top:3px;}
 
   .tabs{display:flex;gap:2px;background:var(--parchment);padding:3px;border-radius:11px;margin-bottom:18px;overflow-x:auto;}
-  .tab{flex:1;padding:8px 3px;border:none;background:transparent;border-radius:9px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:10px;font-weight:500;color:var(--ink-m);transition:all .2s;white-space:nowrap;}
+  .tab{flex:1;padding:8px 3px;border:none;background:transparent;border-radius:9px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:20px;font-weight:500;color:var(--ink-m);transition:all .2s;white-space:nowrap;}
   .tab.on{background:white;color:var(--ink);box-shadow:0 2px 6px var(--shadow);}
 
   .sec-title{font-family:'Noto Serif KR',serif;font-size:14px;font-weight:600;margin-bottom:12px;display:block;}
@@ -161,9 +161,9 @@
 <div class="wrap" id="app" style="display:none">
   <div class="hdr">
     <div class="hdr-cross">✦ ✦ ✦</div>
-    <h1>등대6셀 기도방</h1>
+    <h1>WAR ROOM</h1>
     <p>등대6셀이 함께 기도하며 하나님의 은혜를 나눕니다</p>
-    <div class="verse">"너는 내게 부르짖으라 내가 네게 응답하겠고<br>네가 알지 못하는 크고 은밀한 일을 네게 보이리라" — 예레미야 33:3</div>
+    <div class="verse">그러므로 너희도 영적인 것을 사모하는 자인즉<br>교회의 덕을 세우기 위하여 그것이 풍성하기를 구하라 — 고전 14:12</div>
     <div class="sync-badge"><span class="sync-dot"></span>Firebase 실시간 동기화 · 셀 전체 공유</div>
   </div>
 
@@ -302,7 +302,7 @@ function answeredCard(p){return `<div class="card is-answered"><div class="card-
 
 function renderList(){
   const el=document.getElementById('card-list');
-  const active=[...pa()].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  const active=pa();
   const done=[...aa()].sort((a,b)=>(b.answeredTs||0)-(a.answeredTs||0));
   if(!active.length&&!done.length){el.innerHTML='<div class="empty"><div class="ico">🕊️</div><p>등록된 기도제목이 없습니다.</p></div>';return;}
   el.innerHTML=active.map(activeCard).join('')+done.map(answeredCard).join('');
@@ -315,7 +315,6 @@ function renderAll(){
   if(!list.length){el.innerHTML='<div class="empty"><div class="ico">🕊️</div><p>현재 기도중인 제목이 없습니다.</p></div>';return;}
   const order=[],map={};
   list.forEach(p=>{if(!map[p.name]){map[p.name]=[];order.push(p.name);}map[p.name].push(p);});
-  order.sort((a,b)=>b.localeCompare(a,'ko'));
   el.innerHTML=order.map(name=>{const items=map[name];return `<div class="member-block">
     <div class="member-name-row"><div class="member-avatar">${name[0]}</div><span class="member-name-text">${name}</span><span class="member-pray-count">기도제목 ${items.length}개</span></div>
     ${items.map((p,i)=>`<div class="prayer-row">
@@ -370,7 +369,7 @@ window.openEdit=(k)=>{const p=prayers[k];if(!p)return;document.getElementById('e
 window.saveEdit=async()=>{const k=document.getElementById('edit-key').value,name=document.getElementById('edit-name').value.trim(),content=document.getElementById('edit-content').value.trim(),pw=document.getElementById('edit-pw').value;if(pw!==ADMIN_PW){toast('🔒 비밀번호가 틀렸습니다');return;}if(!name||!content){toast('모두 입력해 주세요');return;}await update(ref(db,`prayers/${k}`),{name,content});closeModal('edit-modal');toast('✅ 수정되었습니다');};
 window.openDel=(k)=>{document.getElementById('del-key').value=k;document.getElementById('del-pw').value='';document.getElementById('del-modal').style.display='flex';};
 window.confirmDelete=async()=>{const k=document.getElementById('del-key').value,pw=document.getElementById('del-pw').value;if(pw!==ADMIN_PW){toast('🔒 비밀번호가 틀렸습니다');return;}await remove(ref(db,`prayers/${k}`));closeModal('del-modal');toast('삭제되었습니다');};
-window.addPrayer=async()=>{const name=document.getElementById('f-name').value.trim(),content=document.getElementById('f-content').value.trim();if(!name||!content){toast('이름과 기도제목을 입력해 주세요');return;}const btn=document.getElementById('btn-submit');btn.disabled=true;btn.textContent='등록 중...';await push(prayRef,{name,content,date:today(),prayCount:0,createdAt:Date.now()});document.getElementById('f-name').value='';document.getElementById('f-content').value='';btn.disabled=false;btn.textContent='🙏 기도제목 등록하기';toast('✅ 기도제목이 등록되었습니다');switchTab('list');};
+window.addPrayer=async()=>{const name=document.getElementById('f-name').value.trim(),content=document.getElementById('f-content').value.trim();if(!name||!content){toast('이름과 기도제목을 입력해 주세요');return;}const btn=document.getElementById('btn-submit');btn.disabled=true;btn.textContent='등록 중...';await push(prayRef,{name,content,date:today(),prayCount:0});document.getElementById('f-name').value='';document.getElementById('f-content').value='';btn.disabled=false;btn.textContent='🙏 기도제목 등록하기';toast('✅ 기도제목이 등록되었습니다');switchTab('list');};
 window.closeModal=(id)=>{document.getElementById(id).style.display='none';};
 window.switchTab=(name)=>{curTab=name;['list','all','add','answered','stats'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===name?'':'none';});document.querySelectorAll('.tab').forEach((b,i)=>{b.classList.toggle('on',['list','all','add','answered','stats'][i]===name);});render();};
 
