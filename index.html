@@ -40,24 +40,31 @@
   .sc-hint{font-size:9px;color:var(--gold);margin-top:3px;}
 
   .tabs{display:flex;gap:2px;background:var(--parchment);padding:3px;border-radius:11px;margin-bottom:18px;overflow-x:auto;}
-  .tab{flex:1;padding:8px 3px;border:none;background:transparent;border-radius:9px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:20px;font-weight:500;color:var(--ink-m);transition:all .2s;white-space:nowrap;}
+  .tab{flex:1;padding:8px 3px;border:none;background:transparent;border-radius:9px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:10px;font-weight:500;color:var(--ink-m);transition:all .2s;white-space:nowrap;}
   .tab.on{background:white;color:var(--ink);box-shadow:0 2px 6px var(--shadow);}
 
   .sec-title{font-family:'Noto Serif KR',serif;font-size:14px;font-weight:600;margin-bottom:12px;display:block;}
   .cards{display:grid;gap:10px;}
-  .card{background:white;border:1px solid var(--parchment);border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px var(--shadow);position:relative;overflow:hidden;animation:fadeIn .3s ease;cursor:pointer;transition:box-shadow .3s ease,transform .3s ease;}
-  .card.expanded{box-shadow:0 8px 32px rgba(44,36,22,0.18);transform:scale(1.02);}
-  .card.expanded .card-name{font-size:17px;}
-  .card.expanded .card-body{font-size:19px;color:var(--ink);font-weight:500;}
+  .card{background:white;border:1px solid var(--parchment);border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px var(--shadow);position:relative;overflow:hidden;animation:fadeIn .3s ease;cursor:pointer;}
+  .card-overlay{display:none;position:fixed;inset:0;background:rgba(44,36,22,0.5);z-index:500;animation:fadeIn .2s ease;}
+  .card-overlay.open{display:flex;align-items:center;justify-content:center;padding:20px;}
+  .card-expanded{background:white;border-radius:18px;padding:28px 24px;width:100%;max-width:560px;max-height:85vh;overflow-y:auto;box-shadow:0 16px 48px rgba(44,36,22,0.3);animation:fadeIn .25s ease;}
+  .card-expanded .card-bar{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px;background:var(--gold);}
+  .card-expanded .card-name{font-family:'Noto Serif KR',serif;font-weight:700;font-size:28px;color:var(--ink);}
+  .card-expanded .card-date{font-size:14px;color:var(--ink-m);}
+  .card-expanded .card-body{font-size:22px;color:var(--ink-s);line-height:1.9;}
+  .card-expanded .card-foot{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .card-expanded .xb{font-size:13px;padding:5px 12px;}
+  .card-close-btn{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:var(--parchment);border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
   .card-bar{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px;background:var(--gold);}
   .card.is-answered{background:#f9fdf9;border-color:#c8e0cc;opacity:.88;}
   .card.is-answered .card-bar{background:var(--ans);}
   .card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
-  .card-name{font-family:'Noto Serif KR',serif;font-weight:700;font-size:14px;color:var(--ink);transition:font-size .3s ease;}
+  .card-name{font-family:'Noto Serif KR',serif;font-weight:700;font-size:14px;color:var(--ink);}
   .card-date{font-size:10px;color:var(--ink-m);white-space:nowrap;}
   .card-body-row{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
   .ans-tag{display:inline-block;flex-shrink:0;background:#c0392b;color:white;font-family:'Noto Serif KR',serif;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.04em;line-height:1.4;}
-  .card-body{font-size:16px;color:var(--ink-s);line-height:1.75;flex:1;transition:font-size .3s ease,color .3s ease,font-weight .3s ease;}
+  .card-body{font-size:16px;color:var(--ink-s);line-height:1.75;flex:1;}
   .card-foot{display:flex;gap:4px;flex-wrap:wrap;align-items:center;}
   .xb{display:inline;font-family:'Noto Sans KR',sans-serif;font-size:9px;font-weight:500;border:1px solid #ccc;border-radius:3px;padding:1px 5px;background:white;cursor:pointer;white-space:nowrap;user-select:none;line-height:1.4;}
   .xb:hover{opacity:.75;}
@@ -156,6 +163,9 @@
   </div>
 </div>
 
+<div class="card-overlay" id="card-overlay" onclick="closeCardOverlay(event)">
+  <div class="card-expanded" id="card-expanded-inner"></div>
+</div>
 <div class="loading-screen" id="loading">
   <div class="loading-cross">✦ ✦ ✦</div>
   <div class="loading-spinner"></div>
@@ -376,7 +386,26 @@ window.openDel=(k)=>{document.getElementById('del-key').value=k;document.getElem
 window.confirmDelete=async()=>{const k=document.getElementById('del-key').value,pw=document.getElementById('del-pw').value;if(pw!==ADMIN_PW){toast('🔒 비밀번호가 틀렸습니다');return;}await remove(ref(db,`prayers/${k}`));closeModal('del-modal');toast('삭제되었습니다');};
 window.addPrayer=async()=>{const name=document.getElementById('f-name').value.trim(),content=document.getElementById('f-content').value.trim();if(!name||!content){toast('이름과 기도제목을 입력해 주세요');return;}const btn=document.getElementById('btn-submit');btn.disabled=true;btn.textContent='등록 중...';await push(prayRef,{name,content,date:today(),prayCount:0,createdAt:Date.now()});document.getElementById('f-name').value='';document.getElementById('f-content').value='';btn.disabled=false;btn.textContent='🙏 기도제목 등록하기';toast('✅ 기도제목이 등록되었습니다');switchTab('list');};
 window.closeModal=(id)=>{document.getElementById(id).style.display='none';};
-window.toggleCard=(el)=>{el.classList.toggle('expanded');};
+window.toggleCard=(el)=>{
+  const name=el.querySelector('.card-name')?.textContent||'';
+  const date=el.querySelector('.card-date')?.textContent||'';
+  const body=el.querySelector('.card-body')?.textContent||'';
+  const foot=el.querySelector('.card-foot')?.innerHTML||'';
+  const bar=el.querySelector('.card-bar')?'<div class="card-bar"></div>':'';
+  document.getElementById('card-expanded-inner').innerHTML=`
+    ${bar}
+    <button class="card-close-btn" onclick="closeCardOverlay()">✕</button>
+    <div class="card-top" style="margin-bottom:12px"><span class="card-name">${name}</span><span class="card-date">${date}</span></div>
+    <div class="card-body-row"><p class="card-body">${body}</p></div>
+    <div class="card-foot">${foot}</div>`;
+  document.getElementById('card-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+};
+window.closeCardOverlay=(e)=>{
+  if(e&&e.target!==document.getElementById('card-overlay'))return;
+  document.getElementById('card-overlay').classList.remove('open');
+  document.body.style.overflow='';
+};
 window.switchTab=(name)=>{curTab=name;['list','all','add','answered','stats'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===name?'':'none';});document.querySelectorAll('.tab').forEach((b,i)=>{b.classList.toggle('on',['list','all','add','answered','stats'][i]===name);});render();};
 
 let tt;
