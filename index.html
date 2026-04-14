@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>WAR ROOM</title>
-<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;WAR ROOM&quot;,&quot;short_name&quot;:&quot;WAR ROOM&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;./icon-180.png&quot;,&quot;sizes&quot;:&quot;180x180&quot;,&quot;type&quot;:&quot;image/png&quot;}],&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#faf7f2&quot;,&quot;theme_color&quot;:&quot;#c9a84c&quot;}">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="WAR ROOM">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500&family=Black+Ops+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
   :root{--cream:#faf7f2;--warm:#fff9f0;--parchment:#f0e8d8;--gold:#c9a84c;--gold-d:#9a7a2e;--ink:#2c2416;--ink-s:#5a4e3a;--ink-m:#9a8c75;--ans:#4a7c59;--ans-bg:#eaf4ee;--shadow:rgba(44,36,22,0.1);}
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -25,7 +26,7 @@
 
   .hdr{text-align:center;padding:28px 0 20px;border-bottom:1px solid var(--parchment);margin-bottom:20px;}
   .hdr-cross{font-size:14px;letter-spacing:10px;opacity:.4;margin-bottom:8px;}
-  .hdr h1{font-family:'Black Ops One',sans-serif;font-size:30px;font-weight:400;letter-spacing:4px;text-shadow:1px 1px 0 rgba(0,0,0,0.2);}
+  .hdr h1{font-family:'Bebas Neue',sans-serif;font-size:40px;font-weight:400;letter-spacing:4px;}
   .hdr p{margin-top:5px;color:var(--ink-m);font-size:11px;}
   .verse{margin-top:11px;display:inline-block;padding:9px 14px;background:var(--parchment);border-left:3px solid var(--gold);border-radius:0 7px 7px 0;font-family:'Noto Serif KR',serif;font-size:11px;color:var(--ink-s);font-style:italic;line-height:1.7;}
   .sync-badge{margin-top:8px;font-size:10px;color:var(--gold);font-weight:500;}
@@ -39,21 +40,24 @@
   .sc-hint{font-size:9px;color:var(--gold);margin-top:3px;}
 
   .tabs{display:flex;gap:2px;background:var(--parchment);padding:3px;border-radius:11px;margin-bottom:18px;overflow-x:auto;}
-  .tab{flex:1;padding:8px 3px;border:none;background:transparent;border-radius:9px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:10px;font-weight:500;color:var(--ink-m);transition:all .2s;white-space:nowrap;}
+  .tab{flex:1;padding:8px 3px;border:none;background:transparent;border-radius:9px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:20px;font-weight:500;color:var(--ink-m);transition:all .2s;white-space:nowrap;}
   .tab.on{background:white;color:var(--ink);box-shadow:0 2px 6px var(--shadow);}
 
   .sec-title{font-family:'Noto Serif KR',serif;font-size:14px;font-weight:600;margin-bottom:12px;display:block;}
   .cards{display:grid;gap:10px;}
-  .card{background:white;border:1px solid var(--parchment);border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px var(--shadow);position:relative;overflow:hidden;animation:fadeIn .3s ease;}
+  .card{background:white;border:1px solid var(--parchment);border-radius:14px;padding:14px 16px;box-shadow:0 2px 12px var(--shadow);position:relative;overflow:hidden;animation:fadeIn .3s ease;cursor:pointer;transition:box-shadow .3s ease,transform .3s ease;}
+  .card.expanded{box-shadow:0 8px 32px rgba(44,36,22,0.18);transform:scale(1.02);}
+  .card.expanded .card-name{font-size:17px;}
+  .card.expanded .card-body{font-size:19px;color:var(--ink);font-weight:500;}
   .card-bar{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px;background:var(--gold);}
   .card.is-answered{background:#f9fdf9;border-color:#c8e0cc;opacity:.88;}
   .card.is-answered .card-bar{background:var(--ans);}
   .card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
-  .card-name{font-family:'Noto Serif KR',serif;font-weight:700;font-size:14px;color:var(--ink);}
+  .card-name{font-family:'Noto Serif KR',serif;font-weight:700;font-size:14px;color:var(--ink);transition:font-size .3s ease;}
   .card-date{font-size:10px;color:var(--ink-m);white-space:nowrap;}
   .card-body-row{display:flex;align-items:center;gap:7px;margin-bottom:10px;}
   .ans-tag{display:inline-block;flex-shrink:0;background:#c0392b;color:white;font-family:'Noto Serif KR',serif;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:.04em;line-height:1.4;}
-  .card-body{font-size:16px;color:var(--ink-s);line-height:1.75;flex:1;}
+  .card-body{font-size:16px;color:var(--ink-s);line-height:1.75;flex:1;transition:font-size .3s ease,color .3s ease,font-weight .3s ease;}
   .card-foot{display:flex;gap:4px;flex-wrap:wrap;align-items:center;}
   .xb{display:inline;font-family:'Noto Sans KR',sans-serif;font-size:9px;font-weight:500;border:1px solid #ccc;border-radius:3px;padding:1px 5px;background:white;cursor:pointer;white-space:nowrap;user-select:none;line-height:1.4;}
   .xb:hover{opacity:.75;}
@@ -163,7 +167,7 @@
     <div class="hdr-cross">✦ ✦ ✦</div>
     <h1>WAR ROOM</h1>
     <p>등대6셀이 함께 기도하며 하나님의 은혜를 나눕니다</p>
-    <div class="verse">"너는 내게 부르짖으라 내가 네게 응답하겠고<br>네가 알지 못하는 크고 은밀한 일을 네게 보이리라" — 예레미야 33:3</div>
+    <div class="verse">그러므로 너희도 영적인 것을 사모하는 자인즉<br>교회의 덕을 세우기 위하여 그것이 풍성하기를 구하라 — 고전 14:12</div>
     <div class="sync-badge"><span class="sync-dot"></span>Firebase 실시간 동기화 · 셀 전체 공유</div>
   </div>
 
@@ -281,7 +285,7 @@ function render(){
   if(curTab==='stats')renderStats();
 }
 
-function activeCard(p){return `<div class="card"><div class="card-bar"></div>
+function activeCard(p){return `<div class="card" onclick="toggleCard(this)"><div class="card-bar"></div>
   <div class="card-top"><span class="card-name">${p.name}</span><span class="card-date">${p.date}</span></div>
   <div class="card-body-row"><p class="card-body">${p.content}</p></div>
   <div class="card-foot">
@@ -372,6 +376,7 @@ window.openDel=(k)=>{document.getElementById('del-key').value=k;document.getElem
 window.confirmDelete=async()=>{const k=document.getElementById('del-key').value,pw=document.getElementById('del-pw').value;if(pw!==ADMIN_PW){toast('🔒 비밀번호가 틀렸습니다');return;}await remove(ref(db,`prayers/${k}`));closeModal('del-modal');toast('삭제되었습니다');};
 window.addPrayer=async()=>{const name=document.getElementById('f-name').value.trim(),content=document.getElementById('f-content').value.trim();if(!name||!content){toast('이름과 기도제목을 입력해 주세요');return;}const btn=document.getElementById('btn-submit');btn.disabled=true;btn.textContent='등록 중...';await push(prayRef,{name,content,date:today(),prayCount:0,createdAt:Date.now()});document.getElementById('f-name').value='';document.getElementById('f-content').value='';btn.disabled=false;btn.textContent='🙏 기도제목 등록하기';toast('✅ 기도제목이 등록되었습니다');switchTab('list');};
 window.closeModal=(id)=>{document.getElementById(id).style.display='none';};
+window.toggleCard=(el)=>{el.classList.toggle('expanded');};
 window.switchTab=(name)=>{curTab=name;['list','all','add','answered','stats'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===name?'':'none';});document.querySelectorAll('.tab').forEach((b,i)=>{b.classList.toggle('on',['list','all','add','answered','stats'][i]===name);});render();};
 
 let tt;
