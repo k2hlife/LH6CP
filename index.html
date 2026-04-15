@@ -274,7 +274,7 @@ function today(){return new Date().toISOString().split('T')[0];}
 function nowTs(){return Date.now();}
 function pa(){return Object.entries(prayers).map(([k,v])=>({...v,_key:k}));}
 function aa(){return Object.entries(answered).map(([k,v])=>({...v,_key:k}));}
-function xb(cls,label,fn){return `<span class="xb ${cls}" onclick="${fn}">${label}</span>`;}
+function xb(cls,label,fn){return `<span class="xb ${cls}" onclick="event.stopPropagation();${fn}">${label}</span>`;}
 
 const prayRef=ref(db,'prayers');
 const ansRef=ref(db,'answered');
