@@ -1,0 +1,9 @@
+{
+  "name": "WAR ROOM",
+  "short_name": "WAR ROOM",
+  "icons": [{"src": "./icon-180.png", "sizes": "180x180", "type": "image/png"}],
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#faf7f2",
+  "theme_color": "#c9a84c"
+}
