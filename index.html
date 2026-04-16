@@ -89,12 +89,17 @@
 
   .stat-sec{background:white;border:1px solid var(--parchment);border-radius:14px;padding:16px;box-shadow:0 2px 10px var(--shadow);margin-bottom:12px;}
   .stat-sec h3{font-family:'Noto Serif KR',serif;font-size:13px;margin-bottom:12px;}
+  .s-card{flex:1;background:var(--warm);border-radius:10px;padding:12px 8px;text-align:center;border:1px solid var(--parchment);}
+  .s-num{font-family:'Noto Serif KR',serif;font-size:22px;font-weight:700;}
+  .s-lbl{font-size:10px;color:var(--ink-m);margin-top:4px;}
   .mbar{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--parchment);}
   .mbar:last-child{border-bottom:none;}
   .mbar-name{font-size:11px;font-weight:500;min-width:55px;}
-  .mbar-wrap{flex:1;height:6px;background:var(--parchment);border-radius:4px;overflow:hidden;}
-  .mbar-fill-green{height:100%;background:linear-gradient(90deg,#5dba7a,#3da05a);border-radius:4px;transition:width .8s ease;}
-  .mbar-fill-pink{height:100%;background:linear-gradient(90deg,#e8729a,#c94d7a);border-radius:4px;transition:width .8s ease;}
+  .mbar-rank{font-size:11px;font-weight:500;min-width:26px;color:var(--ink-m);}
+  .mbar-wrap{flex:1;height:22px;background:var(--parchment);border-radius:4px;overflow:hidden;}
+  .mbar-fill{height:100%;border-radius:0 4px 4px 0;transition:width .8s ease;}
+  .mbar-fill-green{height:100%;background:#43A047;border-radius:0 4px 4px 0;transition:width .8s ease;}
+  .mbar-fill-pink{height:100%;background:#43A047;border-radius:0 4px 4px 0;transition:width .8s ease;}
   .mbar-val{font-size:10px;color:var(--ink-m);min-width:28px;text-align:right;}
 
   .allview-box{background:white;border:1px solid var(--parchment);border-radius:16px;overflow:hidden;box-shadow:0 4px 20px var(--shadow);}
@@ -225,6 +230,10 @@
     </div>
     <div class="stat-sec"><h3>🏆 기도제목 많이 낸 사람 TOP 5</h3><div id="top-submitters"></div></div>
     <div class="stat-sec"><h3>🙏 가장 많이 기도된 제목 TOP 5</h3><div id="top-bars"></div></div>
+    <div class="stat-sec"><h3>✅ 기도응답 통계</h3>
+      <div id="ans-summary" style="display:flex;gap:10px;margin-bottom:16px"></div>
+      <div id="ans-bars"></div>
+    </div>
   </div>
 </div>
 
@@ -360,6 +369,7 @@ function renderAnswered(){
 
 function renderStats(){
   const pl=pa(),al=aa();
+
   // 도넛 차트
   const mm={};[...pl,...al].forEach(p=>{mm[p.name]=(mm[p.name]||0)+1;});
   const me=Object.entries(mm).sort((a,b)=>b[1]-a[1]);
@@ -393,33 +403,51 @@ function renderStats(){
     el.innerHTML=`<div style="width:11px;height:11px;border-radius:50%;background:${donutColors[i%donutColors.length]};flex-shrink:0"></div><span style="flex:1">${n}</span><span style="font-size:11px;opacity:.6">${v}건</span>`;
     leg.appendChild(el);
   });
-  // TOP 5 기도된 제목 (기도제목 내용 + 횟수)
-  const top=[...pl].sort((a,b)=>(b.prayCount||0)-(a.prayCount||0)).slice(0,5);
-  const mp=Math.max(...top.map(p=>p.prayCount||0),1);
-  document.getElementById('top-bars').innerHTML=top.length?top.map((p,i)=>`
-    <div class="mbar" style="flex-direction:column;align-items:flex-start;gap:5px;padding:9px 0">
-      <div style="display:flex;align-items:center;gap:6px;width:100%">
-        <span style="font-size:10px;font-weight:700;color:var(--gold);min-width:18px">${i+1}위</span>
-        <span style="font-size:11px;color:var(--ink-s);flex:1;line-height:1.5">${p.content}</span>
-        <span class="mbar-val" style="white-space:nowrap">${p.prayCount||0}회</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px;width:100%">
-        <span style="min-width:18px"></span>
-        <div class="mbar-wrap" style="flex:1"><div class="mbar-fill-pink" style="width:${(p.prayCount||0)/mp*100}%"></div></div>
-        <span style="font-size:10px;color:var(--ink-m);min-width:40px;text-align:right">${p.name}</span>
-      </div>
-    </div>`).join(''):'<p style="font-size:11px;color:var(--ink-m)">아직 기도 기록이 없습니다</p>';
 
-  // TOP 5 기도제목 많이 낸 사람
+  // 🏆 기도제목 많이 낸 사람 TOP5 (빨강)
   const subMap={};[...pl,...al].forEach(p=>{subMap[p.name]=(subMap[p.name]||0)+1;});
   const topSub=Object.entries(subMap).sort((a,b)=>b[1]-a[1]).slice(0,5);
   const ms=Math.max(...topSub.map(e=>e[1]),1);
   document.getElementById('top-submitters').innerHTML=topSub.length?topSub.map(([n,v],i)=>`
     <div class="mbar">
-      <span style="font-size:10px;font-weight:700;color:var(--gold);min-width:22px">${i+1}위</span>
+      <span class="mbar-rank">${i+1}위</span>
       <span class="mbar-name">${n}</span>
-      <div class="mbar-wrap"><div class="mbar-fill-green" style="width:${v/ms*100}%"></div></div>
+      <div class="mbar-wrap"><div class="mbar-fill" style="width:${v/ms*100}%;background:#E53935"></div></div>
       <span class="mbar-val">${v}건</span></div>`).join(''):'<p style="font-size:11px;color:var(--ink-m)">데이터 없음</p>';
+
+  // 🙏 가장 많이 기도된 제목 TOP5 (초록)
+  const top=[...pl].sort((a,b)=>(b.prayCount||0)-(a.prayCount||0)).slice(0,5);
+  const mp=Math.max(...top.map(p=>p.prayCount||0),1);
+  document.getElementById('top-bars').innerHTML=top.length?top.map((p,i)=>`
+    <div style="padding:9px 0;border-bottom:1px solid var(--parchment)">
+      <div style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px">
+        <span style="font-size:11px;font-weight:500;color:var(--ink-m);min-width:26px">${i+1}위</span>
+        <span style="font-size:12px;color:var(--ink-s);flex:1;line-height:1.55">${p.content}</span>
+        <span style="font-size:11px;color:var(--ink-m);white-space:nowrap">${p.prayCount||0}회</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding-left:34px">
+        <div class="mbar-wrap" style="height:22px"><div class="mbar-fill" style="width:${(p.prayCount||0)/mp*100}%;background:#43A047"></div></div>
+        <span style="font-size:10px;color:var(--ink-m);min-width:36px;text-align:right">${p.name}</span>
+      </div>
+    </div>`).join(''):'<p style="font-size:11px;color:var(--ink-m)">아직 기도 기록이 없습니다</p>';
+
+  // ✅ 기도응답 통계 (파랑)
+  const ansTotal=al.length,prayTotal=pl.length,ansRate=tot>0?Math.round(ansTotal/tot*100):0;
+  document.getElementById('ans-summary').innerHTML=`
+    <div class="s-card"><div class="s-num" style="color:#2e7d32">${ansTotal}</div><div class="s-lbl">총 응답 수</div></div>
+    <div class="s-card"><div class="s-num" style="color:#1565c0">${prayTotal}</div><div class="s-lbl">기도중</div></div>
+    <div class="s-card"><div class="s-num" style="color:#c62828">${ansRate}%</div><div class="s-lbl">응답률</div></div>`;
+  const ansMap={};al.forEach(p=>{ansMap[p.name]=(ansMap[p.name]||0)+1;});
+  const allNames=Object.keys(subMap);
+  allNames.forEach(n=>{if(!ansMap[n])ansMap[n]=0;});
+  const ansList=Object.entries(ansMap).sort((a,b)=>b[1]-a[1]);
+  const ma=Math.max(...ansList.map(e=>e[1]),1);
+  document.getElementById('ans-bars').innerHTML=ansList.map(([n,v],i)=>`
+    <div class="mbar">
+      <span class="mbar-rank">${v>0?i+1+'위':'-'}</span>
+      <span class="mbar-name">${n}</span>
+      <div class="mbar-wrap"><div class="mbar-fill" style="width:${v>0?v/ma*100:2}%;background:${v>0?'#1E88E5':'#ccc'}"></div></div>
+      <span class="mbar-val">${v}건</span></div>`).join('');
 }
 
 async function doAnswered(k){
